@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>简会AI识图 · 应用效益测算</title>
+<style>
+:root {
+  --bg: #F5F7FA;
+  --card: #FFFFFF;
+  --border: #E4E9F0;
+  --text: #1F2937;
+  --muted: #8A94A6;
+  --navy: #16324F;
+  --blue: #2563EB;
+  --blue-deep: #1D4ED8;
+  --blue-soft: #EEF3FE;
+  --red: #C0392B;
+  --red-soft: #FDECEA;
+  --teal: #0E9F6E;
+  --teal-soft: #E8F7F0;
+  --orange: #EA580C;
+  --purple: #7C3AED;
+  --purple-soft: #F3EEFE;
+  --amber: #F59E0B;
+  --radius: 14px;
+  --shadow: 0 1px 3px rgba(22,50,79,.06), 0 8px 24px rgba(22,50,79,.05);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.topbar {
+  background: linear-gradient(135deg, #16324F 0%, #1D4ED8 100%);
+  border-bottom: 4px solid var(--amber);
+  color: #fff;
+  padding: 20px 32px;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.topbar .brand { font-size: 21px; font-weight: 700; letter-spacing: 1px; }
+.topbar .tagline { font-size: 13px; opacity: .85; }
+.pdf-btn {
+  margin-left: auto; align-self: center; padding: 10px 18px; border: none; border-radius: 8px;
+  background: var(--amber); color: #fff; font-size: 13.5px; font-weight: 700; cursor: pointer;
+  white-space: nowrap; transition: filter .15s, transform .1s, box-shadow .15s;
+}
+.pdf-btn:hover { filter: brightness(1.08); box-shadow: 0 4px 14px rgba(245,158,11,.45); }
+.pdf-btn:active { transform: scale(.97); }
+.pdf-btn:disabled { opacity: .75; cursor: default; }
+main { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+h2 { font-size: 17px; font-weight: 700; color: var(--navy); }
+h3 { font-size: 15px; font-weight: 700; color: var(--navy); }
+.hidden { display: none !important; }
+
+/* ===== 布局 ===== */
+.calc-grid { display: grid; grid-template-columns: 400px 1fr; gap: 20px; align-items: start; }
+@media (max-width: 900px) { .calc-grid { grid-template-columns: 1fr; } }
+.result-col { display: flex; flex-direction: column; gap: 20px; }
+
+/* ===== 录入 ===== */
+.input-card { padding: 22px; border-top: 4px solid var(--blue); }
+.input-card h2, .value-section > h2, .ledger-head h2 {
+  border-left: 4px solid var(--blue);
+  padding-left: 10px;
+  margin-bottom: 14px;
+}
+.value-sub { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+.field { margin-bottom: 15px; }
+.field > label { display: block; font-weight: 600; font-size: 13px; color: var(--navy); margin-bottom: 6px; }
+.field input[type="number"], .field select {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
+  font-size: 14px; color: var(--text); background: #FBFCFE; outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.field input:focus, .field select:focus { border-color: var(--blue); background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+.hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.inline-row { display: flex; gap: 8px; align-items: center; }
+.inline-row select { width: 96px; flex: none; }
+.inline-row input { flex: 1; min-width: 0; }
+.inline-row .unit { flex: none; color: var(--muted); font-size: 13px; }
+.inline-row .tilde { flex: none; color: var(--orange); font-weight: 700; }
+
+/* 展示模式切换 */
+.mode-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; padding: 10px 12px; background: var(--bg); border-radius: 10px; }
+.mode-label { font-size: 13px; font-weight: 600; color: var(--navy); flex: none; }
+.seg { display: flex; background: #E8EDF3; border-radius: 8px; padding: 3px; gap: 2px; }
+.seg-btn {
+  border: none; background: transparent; padding: 6px 12px; border-radius: 6px;
+  font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.seg-btn.active { background: var(--blue); color: #fff; box-shadow: 0 2px 6px rgba(37,99,235,.35); }
+
+/* 方案选择 */
+.plans { display: flex; flex-direction: column; gap: 8px; }
+.plan-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: 10px; cursor: pointer; background: #FBFCFE;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+}
+.plan-item:hover { border-color: var(--blue); }
+.plan-item input { accent-color: var(--blue); width: 16px; height: 16px; flex: none; }
+.plan-item.sel { border-color: var(--blue); background: var(--blue-soft); box-shadow: 0 2px 8px rgba(37,99,235,.18); }
+.plan-item .p-name { font-size: 13.5px; font-weight: 700; color: var(--navy); }
+.plan-item .p-price { font-size: 12px; color: var(--muted); display: block; }
+.plan-item.sel .p-price { color: var(--blue-deep); font-weight: 700; }
+
+#btnCalc {
+  width: 100%; margin-top: 4px; padding: 13px; border: none; border-radius: 10px;
+  background: linear-gradient(135deg, #1D4ED8, #2563EB);
+  color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 4px; cursor: pointer;
+  transition: transform .1s, box-shadow .15s;
+}
+#btnCalc:hover { box-shadow: 0 6px 18px rgba(37,99,235,.4); }
+#btnCalc:active { transform: scale(.98); }
+.formula {
+  margin-top: 14px; padding: 10px 12px; background: #FFFBEB; border: 1px solid #F5E3B8; border-radius: 8px;
+  font-size: 12px; color: #8A6116; line-height: 1.8;
+}
+.err-tip { display: none; margin-top: 10px; padding: 8px 12px; background: var(--red-soft); color: var(--red); border-radius: 8px; font-size: 13px; }
+.err-tip.show { display: block; }
+
+/* ===== 结果 ===== */
+.money-card { padding: 24px; }
+.money-card.qc { border-top: 4px solid var(--blue); }
+.money-card.boss { border-top: 4px solid var(--red); background: linear-gradient(160deg, #FFFFFF 55%, #FDF6F5 100%); }
+.m-label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 2px; }
+.m-val { font-size: 34px; font-weight: 800; color: var(--navy); font-variant-numeric: tabular-nums; letter-spacing: -.5px; white-space: nowrap; }
+.money-card.boss .m-val { color: var(--red); }
+.m-val.sm { font-size: 20px; }
+.m-extra { margin-top: 12px; font-size: 13px; color: #0B6B4A; background: var(--teal-soft); padding: 9px 12px; border-radius: 8px; line-height: 1.8; }
+.m-extra b { color: inherit; }
+.payback {
+  margin-top: 14px; padding: 11px 14px; background: #FFF8E6; border: 1px solid #F5E3B8;
+  border-radius: 10px; font-size: 13.5px; color: #7A5A14; font-weight: 600;
+}
+.payback b { color: #5C430E; }
+.payback .pb-note { font-weight: 400; color: #A98B4B; font-size: 12px; }
+
+/* ===== 图表 ===== */
+.chart-card { padding: 20px 24px; }
+.chart-card h3 { margin-bottom: 14px; }
+.bars-wrap { display: flex; align-items: flex-end; justify-content: space-around; height: 210px; padding: 0 12px; }
+.bar-group { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 150px; height: 100%; justify-content: flex-end; }
+.bar-val { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bar-val.c-blue { color: var(--blue-deep); }
+.bar-val.c-teal { color: var(--teal); }
+.bar-val.c-orange { color: var(--orange); }
+.bar-stack {
+  width: 64px; display: flex; flex-direction: column; justify-content: flex-end;
+  border-radius: 8px 8px 4px 4px; overflow: hidden; transition: height .7s cubic-bezier(.2,.8,.2,1);
+}
+.bar-seg { width: 100%; }
+.bar-seg.solid.c-blue { background: linear-gradient(180deg, #3B82F6, #1D4ED8); }
+.bar-seg.soft.c-blue { background: rgba(37, 99, 235, .26); }
+.bar-seg.solid.c-teal { background: linear-gradient(180deg, #2DD4BF, #0E9F6E); }
+.bar-seg.soft.c-teal { background: rgba(14, 159, 110, .26); }
+.bar-seg.solid.c-orange { background: linear-gradient(180deg, #FBBF24, #EA580C); }
+.bar-seg.soft.c-orange { background: rgba(234, 88, 12, .26); }
+.bar-label { font-size: 12.5px; color: var(--muted); }
+#cumChart { width: 100%; height: auto; display: block; }
+#cumChart .axis { fill: var(--muted); font-size: 11px; font-family: inherit; }
+#cumChart .cost-t { fill: var(--red); font-size: 11.5px; font-weight: 600; }
+
+/* ===== 效益说明 ===== */
+.value-section { margin-top: 26px; }
+.value-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+@media (max-width: 1000px) { .value-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .value-grid { grid-template-columns: 1fr; } }
+.vcard { padding: 18px; display: flex; flex-direction: column; gap: 8px; border-top: 4px solid var(--border); }
+.vcard.vc-blue { border-top-color: var(--blue); }
+.vcard.vc-purple { border-top-color: var(--purple); }
+.vcard.vc-teal { border-top-color: var(--teal); }
+.vcard.vc-orange { border-top-color: var(--orange); }
+.vcard .vtag { align-self: flex-start; font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: var(--blue-soft); color: var(--blue-deep); }
+.vtag-purple { background: var(--purple-soft) !important; color: var(--purple) !important; }
+.vtag-teal { background: var(--teal-soft) !important; color: var(--teal) !important; }
+.vtag-orange { background: #FEEFDF !important; color: var(--orange) !important; }
+.vcard .vt { font-size: 15px; font-weight: 700; color: var(--navy); }
+.vcard .vd { font-size: 12.8px; color: #5B6472; line-height: 1.75; }
+.compare { margin-top: 4px; }
+.cmp-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.cmp-name { flex: none; width: 44px; font-size: 12px; color: var(--muted); }
+.cmp-track { flex: 1; height: 14px; background: var(--bg); border-radius: 7px; overflow: hidden; }
+.cmp-fill { height: 100%; border-radius: 7px; transition: width .7s cubic-bezier(.2,.8,.2,1); }
+.cmp-fill.before { background: #C3CCD9; width: 100%; }
+.cmp-fill.after { background: linear-gradient(90deg, #2DD4BF, #0E9F6E); }
+.cmp-num { flex: none; width: 110px; font-size: 12px; font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; text-align: right; }
+.cmp-note { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+/* ===== 台账 ===== */
+.ledger-card { margin-top: 26px; padding: 22px 24px; border-top: 4px solid var(--teal); }
+.ledger-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+.ledger-head .btns { display: flex; gap: 8px; }
+.btn {
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: #fff;
+  font-size: 13px; font-weight: 600; color: var(--navy); cursor: pointer; transition: all .15s;
+}
+.btn:hover { border-color: var(--blue); color: var(--blue); }
+.btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+.btn.primary:hover { background: var(--blue-deep); color: #fff; }
+.btn.danger { color: var(--red); border-color: #F0C9C4; }
+.btn.danger:hover { border-color: var(--red); background: var(--red-soft); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; color: var(--muted); font-weight: 600; padding: 9px 10px; border-bottom: 2px solid var(--border); white-space: nowrap; background: #FAFBFD; }
+td { padding: 10px; border-bottom: 1px solid #F0F3F7; white-space: nowrap; font-variant-numeric: tabular-nums; }
+td.money { color: var(--red); font-weight: 700; }
+td.hours { color: var(--blue-deep); font-weight: 700; }
+td .name-cell { cursor: pointer; border-bottom: 1px dashed #C3CCD9; }
+td .name-cell:hover { color: var(--blue); }
+td .name-input { width: 120px; padding: 3px 6px; border: 1px solid var(--blue); border-radius: 6px; font-size: 13px; outline: none; }
+td .mini-btn { border: none; background: none; color: var(--blue); cursor: pointer; font-size: 12.5px; padding: 2px 6px; }
+td .mini-btn.del { color: var(--muted); }
+td .mini-btn.del:hover { color: var(--red); }
+.empty-row td { text-align: center; color: var(--muted); padding: 26px; }
+.ledger-note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20px 30px; }
+
+/* 打印兜底（PDF 组件不可用时，Ctrl+P 另存为 PDF 亦可） */
+@media print {
+  .pdf-btn, .btns, td .mini-btn { display: none !important; }
+  body { background: #fff; }
+  .calc-grid { grid-template-columns: 1fr; }
+  .card { box-shadow: none; break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">简会AI识图 · 应用效益测算</div>
+  <div class="tagline">输入实际生产数据，即时测算系统应用效益；测算结果本机存档，可导出备查</div>
+  <button class="pdf-btn" id="btnPdf" type="button">一键导出测算报告（PDF）</button>
+</header>
+
+<main>
+  <section class="calc-grid">
+
+    <!-- 左：录入 -->
+    <div class="card input-card">
+      <h2>基础数据录入</h2>
+
+      <div class="mode-row">
+        <span class="mode-label">展示模式</span>
+        <div class="seg">
+          <button class="seg-btn active" data-mode="qc" type="button">质检部门 · 工时</button>
+          <button class="seg-btn" data-mode="boss" type="button">成本</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>图纸处理量</label>
+        <div class="inline-row">
+          <input type="number" id="nQty" min="1" value="450">
+          <select id="qtyUnit">
+            <option value="month" selected>张/月</option>
+            <option value="day">张/天</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>单张图纸人工检验耗时（区间）</label>
+        <div class="inline-row">
+          <input type="number" id="nTimeLo" min="0.5" step="0.5" value="1.5">
+          <span class="tilde">~</span>
+          <input type="number" id="nTimeHi" min="0.5" step="0.5" value="2.5">
+          <span class="unit">小时/张</span>
+        </div>
+        <div class="hint">图纸越复杂耗时越长，按客户给出的复杂程度范围填写；示例：1.5 小时/张经 AI 辅助后约 0.15 小时/张（约 9 分钟）</div>
+      </div>
+      <div class="field">
+        <label>质检人数（承担图纸检验的人数）</label>
+        <input type="number" id="nPeople" min="1" step="1" value="3">
+      </div>
+
+      <div id="bossFields" class="hidden">
+        <div class="field">
+          <label>质检员工资</label>
+          <div class="inline-row">
+            <select id="wageType">
+              <option value="month" selected>月薪</option>
+              <option value="hour">时薪</option>
+            </select>
+            <input type="number" id="nWage" min="1" value="7000">
+            <span class="unit" id="wageUnit">元/小时</span>
+          </div>
+          <div class="hint" id="wageHint">市场参考：月薪 7,000 元约折合时薪 40 元（月薪 ÷ 21.75 ÷ 8）</div>
+        </div>
+        <div class="field">
+          <label>客户意向方案（选定后方可测算投入回收）</label>
+          <div class="plans" id="planGroup">
+            <label class="plan-item"><input type="radio" name="plan" value="dj">
+              <span><span class="p-name">单机版</span><span class="p-price">¥8,000 / 套 · 永久授权 · 提效约 80%</span></span></label>
+            <label class="plan-item"><input type="radio" name="plan" value="ytj">
+              <span><span class="p-name">AI 识图一体机</span><span class="p-price">¥49,800 · 含硬件 · 永久授权 · 提效 10 倍（约 90%）</span></span></label>
+            <label class="plan-item"><input type="radio" name="plan" value="dy">
+              <span><span class="p-name">年订阅版</span><span class="p-price">¥36,800/年 + 年服务费 ¥15,800 · 提效 10 倍（约 90%）</span></span></label>
+          </div>
+        </div>
+      </div>
+
+      <button id="btnCalc" type="button">开始测算</button>
+      <div class="err-tip" id="errTip"></div>
+      <div class="formula" id="formulaBox"></div>
+    </div>
+
+    <!-- 右：结果 -->
+    <div class="result-col">
+      <div class="card money-card qc" id="moneyCard">
+        <div>
+          <span class="m-label" id="mMainLabel">预计每月节约工时</span>
+          <span class="m-val" id="mMain">0</span>
+        </div>
+        <div style="display:flex; gap:32px; margin-top:14px; flex-wrap:wrap;">
+          <div><span class="m-label" id="mSubALabel">每年节约工时</span><span class="m-val sm" id="mSubA">0</span></div>
+          <div><span class="m-label" id="mSubBLabel">三年累计节约工时</span><span class="m-val sm" id="mSubB">0</span></div>
+        </div>
+        <div class="m-extra" id="mExtra"></div>
+        <div class="payback hidden" id="paybackRow"></div>
+      </div>
+
+      <div class="card chart-card">
+        <h3 id="barTitle">节约工时对比（区间）</h3>
+        <div class="bars-wrap" id="barsWrap">
+          <div class="bar-group">
+            <span class="bar-val c-blue" id="barMv">0</span>
+            <div class="bar-stack" id="barM" style="height:2%">
+              <div class="bar-seg soft c-blue" id="barMSoft" style="height:0%"></div>
+              <div class="bar-seg solid c-blue" id="barMSolid" style="height:100%"></div>
+            </div>
+            <span class="bar-label">每月</span>
+          </div>
+          <div class="bar-group">
+            <span class="bar-val c-teal" id="barYv">0</span>
+            <div class="bar-stack" id="barY" style="height:2%">
+              <div class="bar-seg soft c-teal" id="barYSoft" style="height:0%"></div>
+              <div class="bar-seg solid c-teal" id="barYSolid" style="height:100%"></div>
+            </div>
+            <span class="bar-label">每年</span>
+          </div>
+          <div class="bar-group">
+            <span class="bar-val c-orange" id="bar3v">0</span>
+            <div class="bar-stack" id="bar3" style="height:2%">
+              <div class="bar-seg soft c-orange" id="bar3Soft" style="height:0%"></div>
+              <div class="bar-seg solid c-orange" id="bar3Solid" style="height:100%"></div>
+            </div>
+            <span class="bar-label">三年累计</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        <h3 id="cumTitle">36 个月累计节约工时（区间）</h3>
+        <svg id="cumChart" viewBox="0 0 640 232"></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- 效益说明 -->
+  <section class="value-section">
+    <h2>除人工成本节约外的其他应用效益</h2>
+    <div class="value-sub">以下效益虽不直接体现为测算金额，但对交付能力与质量竞争力具有长期支撑作用</div>
+    <div class="value-grid">
+      <div class="card vcard vc-blue">
+        <span class="vtag">交付保障</span>
+        <span class="vt">交付周期得到有效保障</span>
+        <span class="vd">成品检验为订单交付的关键环节。应用 AI 识图后，检验环节耗时约为原来的十分之一，紧急订单不再因检验积压延误交付。</span>
+        <div class="compare">
+          <div class="cmp-row">
+            <span class="cmp-name">应用前</span>
+            <div class="cmp-track"><div class="cmp-fill before"></div></div>
+            <span class="cmp-num" id="vsBefore">1.5 ~ 2.5 小时</span>
+          </div>
+          <div class="cmp-row">
+            <span class="cmp-name">应用后</span>
+            <div class="cmp-track"><div class="cmp-fill after" id="vsAfterBar" style="width:10%"></div></div>
+            <span class="cmp-num" id="vsAfter">0.15 ~ 0.25 小时</span>
+          </div>
+          <div class="cmp-note">单张图纸检验耗时对比（AI 自动标注 + 人工核验）</div>
+        </div>
+      </div>
+      <div class="card vcard vc-purple">
+        <span class="vtag vtag-purple">市场竞争力</span>
+        <span class="vt">质量管理能力成为经营优势</span>
+        <span class="vd">在客户审厂、供应商认定与项目投标过程中，检验环节的数字化、智能化水平是重要评价依据。系统应用情况可作为企业质量管理能力的客观证明，有助于获取更多合作机会。</span>
+      </div>
+      <div class="card vcard vc-teal">
+        <span class="vtag vtag-teal">质量追溯</span>
+        <span class="vt">质量数据电子化，批次全程可追溯</span>
+        <span class="vd">图纸信息、关键尺寸与判定结果全程电子化存档，质量问题可按批次快速溯源；超差数据可反馈至工艺改进与供应商管理，推动质量管理由事后处置转向事前预防。</span>
+      </div>
+      <div class="card vcard vc-orange">
+        <span class="vtag vtag-orange">质量管理岗位</span>
+        <span class="vt">检验工作强度显著降低</span>
+        <span class="vd">AI 识图作业稳定，漏检、错检率同步下降；新员工无需长期培训即可开展图纸检验工作；各类质量报表自动生成，月末统计工作量大幅减少，部门考核数据完整可查。</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 台账 -->
+  <section class="card ledger-card">
+    <div class="ledger-head">
+      <h2>测算记录台账</h2>
+      <div class="btns">
+        <button class="btn primary" id="btnExport" type="button">导出文件（CSV）</button>
+        <button class="btn danger" id="btnClear" type="button">清空台账</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>时间</th><th>客户名称</th><th>模式</th><th>人数</th><th>图纸量</th><th>单张耗时</th>
+          <th>方案</th><th>月节约</th><th>年节约</th><th>三年节约</th><th>回收周期</th><th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="ledgerBody"></tbody>
+    </table>
+    </div>
+    <div class="ledger-note">每次测算自动保存至本机浏览器，数据不对外传输；更换设备前请导出文件备份。客户名称一列可点击后直接补充标注。</div>
+  </section>
+</main>
+
+<footer>本测算结果为参考估算（按录入的耗时区间测算），正式报价及相关费用口径以厦门简会信息科技有限公司报价文件为准。</footer>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var LKEY = 'jh_roi_ledger_v2';
+  var DAYS = 21.75;
+  var mode = 'qc';     // qc=质检部门工时口径 | boss=成本口径
+  var QC_RATE = 0.9;   // 质检工时口径固定 10 倍提效（节约 90%）
+  // 各方案提效口径：单机版提效约 80%（约 5 倍，100 分钟→20 分钟）；一体机 / 年订阅 10 倍（节约 90%）
+  function saveRate(plan) { return plan === 'dj' ? 0.8 : 0.9; }
+
+  var PLAN = {
+    dj:  { label: '单机版',       cost0: 8000,  cost3: 8000 },
+    ytj: { label: 'AI识图一体机', cost0: 49800, cost3: 49800 },
+    dy:  { label: '年订阅版',     cost0: 52600, cost3: 157800 }
+  };
+
+  function fmtMoney(n) { return '¥ ' + Math.round(n).toLocaleString('zh-CN'); }
+  function fmtHour(n) { return Math.round(n).toLocaleString('zh-CN') + ' 小时'; }
+  function fmtShort(n) {
+    if (n >= 100000) return (n / 10000).toFixed(0) + '万';
+    if (n >= 10000) return (n / 10000).toFixed(1) + '万';
+    return String(Math.round(n));
+  }
+
+  /* ---------- 展示模式 ---------- */
+  function formulaText(rate, planLabel) {
+    var eff = Math.round(1 / (1 - rate));
+    var head = '测算口径：' + (planLabel ? '选定方案「' + planLabel + '」，' : '')
+      + '应用 AI 后单张耗时约为人工的 1/' + eff + '（AI 自动标注 + 人工核验）';
+    var line2 = mode === 'boss'
+      ? '每月节约成本 = 日图纸量 × 单张人工耗时（小时）× ' + Math.round(rate * 100) + '% × ' + DAYS + ' 天 × 时薪'
+      : '每月节约工时 = 日图纸量 × 单张人工耗时（小时）× ' + Math.round(rate * 100) + '% × ' + DAYS + ' 天（按耗时区间分别测算，结果以区间呈现）';
+    return head + '<br>' + line2;
+  }
+  function applyMode() {
+    document.querySelectorAll('.seg-btn').forEach(function (b) {
+      b.className = 'seg-btn' + (b.dataset.mode === mode ? ' active' : '');
+    });
+    var isBoss = mode === 'boss';
+    $('bossFields').className = isBoss ? '' : 'hidden';
+    $('moneyCard').className = 'card money-card ' + (isBoss ? 'boss' : 'qc');
+    if (isBoss) {
+      $('mMainLabel').textContent = '预计每月节约人工成本';
+      $('mSubALabel').textContent = '每年节约';
+      $('mSubBLabel').textContent = '三年累计节约';
+      $('barTitle').textContent = '节约人工成本对比（区间）';
+      $('cumTitle').textContent = '36 个月累计节约成本（区间）';
+    } else {
+      $('mMainLabel').textContent = '预计每月节约工时';
+      $('mSubALabel').textContent = '每年节约工时';
+      $('mSubBLabel').textContent = '三年累计节约工时';
+      $('barTitle').textContent = '节约工时对比（区间）';
+      $('cumTitle').textContent = '36 个月累计节约工时（区间）';
+    }
+    $('formulaBox').innerHTML = formulaText(QC_RATE, '');
+  }
+
+  document.querySelectorAll('.seg-btn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      mode = this.dataset.mode;
+      applyMode();
+      calc(false);
+    });
+  });
+
+  /* ---------- 输入 ---------- */
+  function readInputs() {
+    var planEl = document.querySelector('input[name="plan"]:checked');
+    var t1 = parseFloat($('nTimeLo').value) || 0;
+    var t2 = parseFloat($('nTimeHi').value) || 0;
+    if (t1 > t2 && t1 > 0 && t2 > 0) { var tmp = t1; t1 = t2; t2 = tmp; }
+    return {
+      n: parseFloat($('nPeople').value) || 0,
+      q: parseFloat($('nQty').value) || 0,
+      qUnit: $('qtyUnit').value,
+      tLo: t1, tHi: t2,
+      wt: $('wageType').value,
+      wage: parseFloat($('nWage').value) || 0,
+      plan: planEl ? planEl.value : null
+    };
+  }
+  function wageHour(r) { return r.wt === 'hour' ? r.wage : r.wage / (DAYS * 8); }
+
+  /* 图纸量模型：单张耗时按小时，按区间两端分别测算；节约比例 rate 由所选方案决定 */
+  function calcSide(perDay, tHour, rate) {
+    var savedDayH = perDay * tHour * rate; // 日节约工时
+    var savedMonthH = savedDayH * DAYS;
+    return {
+      manualSheet: tHour,
+      aiSheet: tHour * (1 - rate),
+      savedDayH: savedDayH,
+      savedMonthH: savedMonthH,
+      savedYearH: savedMonthH * 12,
+      savedY3H: savedMonthH * 36
+    };
+  }
+  function computeHours(r, rate) {
+    var perDay = r.qUnit === 'day' ? r.q : r.q / DAYS;
+    return { perDay: perDay, lo: calcSide(perDay, r.tLo, rate), hi: calcSide(perDay, r.tHi, rate) };
+  }
+
+  /* ---------- 数字滚动 ---------- */
+  function animateRange(el, lo, hi, formatter) {
+    var sLo = parseFloat(el.dataset.vlo || '0');
+    var sHi = parseFloat(el.dataset.vhi || '0');
+    el.dataset.vlo = lo; el.dataset.vhi = hi;
+    var t0 = performance.now(), dur = 700;
+    function step(t) {
+      var p = Math.min(1, (t - t0) / dur);
+      var e = 1 - Math.pow(1 - p, 3);
+      el.textContent = formatter(sLo + (lo - sLo) * e) + ' ~ ' + formatter(sHi + (hi - sHi) * e);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ---------- 柱状图（区间） ---------- */
+  function setBar(prefix, valId, colorCls, lo, hi, max, formatter) {
+    $(prefix).style.height = Math.max(2, hi / max * 100) + '%';
+    $(prefix + 'Soft').style.height = (hi > lo ? (hi - lo) / hi * 100 : 0) + '%';
+    $(prefix + 'Solid').style.height = (hi > lo ? lo / hi * 100 : 100) + '%';
+    var el = $(valId);
+    el.textContent = formatter(lo) + ' ~ ' + formatter(hi);
+    el.className = 'bar-val ' + colorCls;
+  }
+  function renderBars(lo, hi, formatter) {
+    var max = Math.max(hi.y3, 1);
+    setBar('barM', 'barMv', 'c-blue', lo.month, hi.month, max, formatter);
+    setBar('barY', 'barYv', 'c-teal', lo.year, hi.year, max, formatter);
+    setBar('bar3', 'bar3v', 'c-orange', lo.y3, hi.y3, max, formatter);
+  }
+
+  /* ---------- 累计曲线（区间带） ---------- */
+  function renderCum(loM, hiM, cost0) {
+    var svg = $('cumChart');
+    var W = 640, H = 232, L = 70, R = 16, T = 18, B = 34;
+    var iw = W - L - R, ih = H - T - B;
+    var ymax = Math.max(hiM * 36, cost0, 1) * 1.08;
+    function x(i) { return L + i / 36 * iw; }
+    function y(v) { return T + (1 - v / ymax) * ih; }
+    var s = '', g, gv, gy, i;
+    for (g = 0; g <= 4; g++) {
+      gv = ymax * g / 4; gy = y(gv);
+      s += '<line x1="' + L + '" y1="' + gy + '" x2="' + (W - R) + '" y2="' + gy + '" stroke="#EDF1F6"/>';
+      s += '<text x="' + (L - 8) + '" y="' + (gy + 4) + '" text-anchor="end" class="axis">' + fmtShort(gv) + '</text>';
+    }
+    [0, 6, 12, 18, 24, 30, 36].forEach(function (i) {
+      s += '<text x="' + x(i) + '" y="' + (H - 10) + '" text-anchor="middle" class="axis">' + i + '月</text>';
+    });
+    var dLo = '', dHi = '';
+    for (i = 0; i <= 36; i++) {
+      dLo += (i ? ' L' : 'M') + x(i).toFixed(1) + ' ' + y(loM * i).toFixed(1);
+      dHi += (i ? ' L' : 'M') + x(i).toFixed(1) + ' ' + y(hiM * i).toFixed(1);
+    }
+    s += '<path d="' + dHi + dLo.replace('M', ' L') + ' Z" fill="rgba(37,99,235,.10)"/>';
+    s += '<path d="' + dHi + '" fill="none" stroke="#1D4ED8" stroke-width="2.5" stroke-linecap="round"/>';
+    s += '<path d="' + dLo + '" fill="none" stroke="#0E9F6E" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 4"/>';
+    if (cost0 > 0 && hiM > 0) {
+      var cy = y(cost0);
+      s += '<line x1="' + L + '" y1="' + cy + '" x2="' + (W - R) + '" y2="' + cy + '" stroke="#C0392B" stroke-width="1.5" stroke-dasharray="5 4"/>';
+      s += '<text x="' + (W - R) + '" y="' + (cy - 6) + '" text-anchor="end" class="cost-t">投入 ' + fmtMoney(cost0) + '</text>';
+      var pbFast = cost0 / hiM, pbSlow = cost0 / loM;
+      if (pbFast <= 36) {
+        s += '<circle cx="' + x(pbFast) + '" cy="' + cy + '" r="4.5" fill="#C0392B"/>';
+        if (pbSlow <= 36) s += '<circle cx="' + x(pbSlow) + '" cy="' + cy + '" r="4.5" fill="#C0392B" opacity=".55"/>';
+        var label = pbSlow <= 36 ? '约 ' + pbFast.toFixed(1) + ' ~ ' + pbSlow.toFixed(1) + ' 个月收回投入'
+                                 : '最快约 ' + pbFast.toFixed(1) + ' 个月收回投入';
+        var midX = Math.min(W - R - 70, Math.max(L + 70, x(Math.min(36, (pbFast + Math.min(pbSlow, 36)) / 2))));
+        s += '<text x="' + midX + '" y="' + (cy - 12) + '" text-anchor="middle" class="cost-t">' + label + '</text>';
+      }
+    }
+    svg.innerHTML = s;
+  }
+
+  /* ---------- 单张耗时对比（区间） ---------- */
+  function renderCompare(r, rate) {
+    var k = 1 - rate;
+    $('vsBefore').textContent = r.tLo + ' ~ ' + r.tHi + ' 小时';
+    $('vsAfter').textContent = (r.tLo * k).toFixed(2) + ' ~ ' + (r.tHi * k).toFixed(2) + ' 小时';
+    $('vsAfterBar').style.width = (k * 100) + '%';
+  }
+
+  function showErr(msg) {
+    var el = $('errTip');
+    if (!msg) { el.className = 'err-tip'; return; }
+    el.textContent = msg;
+    el.className = 'err-tip show';
+  }
+
+  /* ---------- 主测算 ---------- */
+  function calc(save) {
+    var r = readInputs();
+    if (r.q <= 0 || r.tLo <= 0 || r.tHi <= 0 || r.n <= 0) {
+      showErr('请完整填写图纸处理量、单张耗时区间与质检人数（均需大于 0）'); return;
+    }
+    if (mode === 'boss' && !r.plan) { showErr('请先与客户确认意向方案，再进行成本测算'); return; }
+    if (mode === 'boss' && r.wage <= 0) { showErr('请填写质检员工资'); return; }
+    showErr('');
+
+    var isBoss = mode === 'boss';
+    var rate = isBoss && r.plan ? saveRate(r.plan) : QC_RATE;
+    var hs = computeHours(r, rate);
+    var fmt = isBoss ? fmtMoney : fmtHour;
+    var vLo, vHi;
+
+    if (isBoss) {
+      var wh = wageHour(r);
+      vLo = { month: hs.lo.savedMonthH * wh, year: hs.lo.savedYearH * wh, y3: hs.lo.savedY3H * wh };
+      vHi = { month: hs.hi.savedMonthH * wh, year: hs.hi.savedYearH * wh, y3: hs.hi.savedY3H * wh };
+    } else {
+      vLo = { month: hs.lo.savedMonthH, year: hs.lo.savedYearH, y3: hs.lo.savedY3H };
+      vHi = { month: hs.hi.savedMonthH, year: hs.hi.savedYearH, y3: hs.hi.savedY3H };
+    }
+
+    animateRange($('mMain'), vLo.month, vHi.month, fmt);
+    animateRange($('mSubA'), vLo.year, vHi.year, fmt);
+    animateRange($('mSubB'), vLo.y3, vHi.y3, fmt);
+
+    var extra = $('mExtra'), pbRow = $('paybackRow');
+    if (isBoss) {
+      extra.className = 'm-extra hidden';
+      var p = PLAN[r.plan];
+      var pbFast = vHi.month > 0 ? p.cost0 / vHi.month : null;
+      var pbSlow = vLo.month > 0 ? p.cost0 / vLo.month : null;
+      var netLo = vLo.y3 - p.cost3, netHi = vHi.y3 - p.cost3;
+      pbRow.className = 'payback';
+      var html = '选定方案「' + p.label + '」（按提效 ' + Math.round(rate * 100) + '% 测算）· ';
+      html += (r.plan === 'dy')
+        ? '首年投入 <b>' + fmtMoney(p.cost0) + '</b>（此后每年 ' + fmtMoney(p.cost0) + '）· '
+        : '一次性投入 <b>' + fmtMoney(p.cost0) + '</b> · ';
+      html += (pbFast !== null ? '约 <b>' + pbFast.toFixed(1) + ' ~ ' + pbSlow.toFixed(1) + '</b> 个月收回投入 · ' : '')
+        + '三年净效益 <b>' + fmtMoney(netLo) + ' ~ ' + fmtMoney(netHi) + '</b>'
+        + '<div class="pb-note">※ 硬件、定制开发及维保等费用口径以正式报价文件为准</div>';
+      pbRow.innerHTML = html;
+    } else {
+      pbRow.className = 'payback hidden';
+      extra.className = 'm-extra';
+      extra.innerHTML = '贵司 ' + r.n + ' 名质检人员承担的图纸检验工作，经 AI 识图辅助（自动标注 + 人工核验）后，'
+        + '每日节约 <b>' + hs.lo.savedDayH.toFixed(1) + ' ~ ' + hs.hi.savedDayH.toFixed(1) + '</b> 小时，折合释放 <b>'
+        + (hs.lo.savedDayH / 8).toFixed(1) + ' ~ ' + (hs.hi.savedDayH / 8).toFixed(1)
+        + '</b> 名质检人员的人力投入，可安排其转向工艺改进、质量分析等更高价值的工作。';
+    }
+
+    renderBars(vLo, vHi, fmt);
+    if (isBoss) {
+      renderCum(vLo.month, vHi.month, PLAN[r.plan].cost0);
+    } else {
+      renderCum(vLo.month, vHi.month, 0);
+    }
+
+    renderCompare(r, rate);
+    $('formulaBox').innerHTML = formulaText(rate, isBoss && r.plan ? PLAN[r.plan].label : '');
+    if (save) { addRecord(r, vLo, vHi); }
+  }
+
+  /* ---------- 台账 ---------- */
+  function loadLedger() {
+    try { return JSON.parse(localStorage.getItem(LKEY)) || []; } catch (e) { return []; }
+  }
+  function saveLedger(arr) { localStorage.setItem(LKEY, JSON.stringify(arr)); }
+
+  function addRecord(r, vLo, vHi) {
+    var arr = loadLedger();
+    var isBoss = mode === 'boss';
+    arr.unshift({
+      t: Date.now(), mode: mode, name: '',
+      n: r.n, q: r.q, qUnit: r.qUnit, tLo: r.tLo, tHi: r.tHi,
+      wt: r.wt, wage: r.wage,
+      plan: isBoss && r.plan ? PLAN[r.plan].label : '',
+      unit: isBoss ? 'money' : 'hour',
+      month: vLo.month, monthHi: vHi.month,
+      year: vLo.year, yearHi: vHi.year,
+      y3: vLo.y3, y3Hi: vHi.y3,
+      cost0: isBoss ? PLAN[r.plan].cost0 : 0,
+      paybackLo: isBoss && vHi.month > 0 ? +(PLAN[r.plan].cost0 / vHi.month).toFixed(1) : null,
+      paybackHi: isBoss && vLo.month > 0 ? +(PLAN[r.plan].cost0 / vLo.month).toFixed(1) : null
+    });
+    saveLedger(arr.slice(0, 200));
+    renderLedger();
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function valText(x, key, keyHi) {
+    var hi = x[keyHi] !== undefined && x[keyHi] !== null ? x[keyHi] : x[key];
+    var f = x.unit === 'money' ? fmtMoney : fmtHour;
+    return f(x[key]) + ' ~ ' + f(hi);
+  }
+  function qtyText(x) {
+    if (!x.q) return '—';
+    return x.q + '张/' + (x.qUnit === 'month' ? '月' : '天');
+  }
+  function timeText(x) {
+    if (!x.tLo) return '—';
+    return x.tLo + '~' + (x.tHi || x.tLo) + '小时';
+  }
+  function pbText(x) {
+    if (x.paybackLo === null || x.paybackLo === undefined) return '—';
+    var hi = x.paybackHi !== undefined && x.paybackHi !== null ? x.paybackHi : x.paybackLo;
+    return x.paybackLo + ' ~ ' + hi + ' 个月';
+  }
+
+  function renderLedger() {
+    var arr = loadLedger();
+    var tb = $('ledgerBody');
+    if (!arr.length) {
+      tb.innerHTML = '<tr class="empty-row"><td colspan="12">暂无测算记录，完成一次测算后将自动保存</td></tr>';
+      return;
+    }
+    var html = '';
+    arr.forEach(function (x, i) {
+      var d = new Date(x.t);
+      var pad = function (v) { return (v < 10 ? '0' : '') + v; };
+      var tstr = (d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+      var nameTxt = x.name ? esc(x.name) : '<span style="color:var(--muted)">点击补充</span>';
+      var unitCls = x.unit === 'money' ? 'money' : 'hours';
+      html += '<tr>'
+        + '<td>' + tstr + '</td>'
+        + '<td><span class="name-cell" data-i="' + i + '">' + nameTxt + '</span></td>'
+        + '<td>' + (x.unit === 'money' ? '成本' : '工时') + '</td>'
+        + '<td>' + (x.n || '—') + '</td>'
+        + '<td>' + qtyText(x) + '</td>'
+        + '<td>' + timeText(x) + '</td>'
+        + '<td>' + esc(x.plan || '—') + '</td>'
+        + '<td class="' + unitCls + '">' + valText(x, 'month', 'monthHi') + '</td>'
+        + '<td>' + valText(x, 'year', 'yearHi') + '</td>'
+        + '<td>' + valText(x, 'y3', 'y3Hi') + '</td>'
+        + '<td>' + pbText(x) + '</td>'
+        + '<td><button class="mini-btn" data-act="load" data-i="' + i + '" type="button">载入</button>'
+        + '<button class="mini-btn del" data-act="del" data-i="' + i + '" type="button">删除</button></td>'
+        + '</tr>';
+    });
+    tb.innerHTML = html;
+  }
+
+  /* 台账交互：客户名称编辑 / 载入 / 删除 */
+  $('ledgerBody').addEventListener('click', function (e) {
+    var cell = e.target.closest('.name-cell');
+    if (cell) {
+      var i = +cell.dataset.i;
+      var arr = loadLedger();
+      var input = document.createElement('input');
+      input.className = 'name-input';
+      input.value = arr[i].name || '';
+      cell.innerHTML = '';
+      cell.appendChild(input);
+      input.focus();
+      var commit = function () {
+        arr = loadLedger();
+        arr[i].name = input.value.trim();
+        saveLedger(arr);
+        renderLedger();
+      };
+      input.addEventListener('blur', commit);
+      input.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') input.blur();
+        if (ev.key === 'Escape') { input.removeEventListener('blur', commit); renderLedger(); }
+      });
+      return;
+    }
+    var btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    var idx = +btn.dataset.i, arr2 = loadLedger();
+    if (btn.dataset.act === 'del') {
+      arr2.splice(idx, 1); saveLedger(arr2); renderLedger(); return;
+    }
+    if (btn.dataset.act === 'load') {
+      var x = arr2[idx];
+      $('nPeople').value = x.n || 1;
+      if (x.q) {
+        $('nQty').value = x.q;
+        $('qtyUnit').value = x.qUnit || 'month';
+      }
+      if (x.tLo) {
+        $('nTimeLo').value = x.tLo;
+        $('nTimeHi').value = x.tHi || x.tLo;
+      }
+      mode = x.unit === 'money' ? 'boss' : 'qc';
+      applyMode();
+      if (mode === 'boss') {
+        var match = Object.keys(PLAN).find(function (k) { return PLAN[k].label === x.plan; });
+        var radio = document.querySelector('input[name="plan"][value="' + (match || 'ytj') + '"]');
+        if (radio) radio.checked = true;
+        document.querySelectorAll('.plan-item').forEach(function (pi) {
+          pi.className = 'plan-item' + (pi.querySelector('input').checked ? ' sel' : '');
+        });
+        if (x.wt) { $('wageType').value = x.wt; $('nWage').value = x.wage; syncWageUI(); }
+      }
+      calc(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+
+  /* 方案单选高亮 */
+  document.querySelectorAll('input[name="plan"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+      document.querySelectorAll('.plan-item').forEach(function (pi) {
+        pi.className = 'plan-item' + (pi.querySelector('input').checked ? ' sel' : '');
+      });
+      if (mode === 'boss') {
+        $('formulaBox').innerHTML = formulaText(saveRate(this.value), PLAN[this.value].label);
+      }
+    });
+  });
+
+  $('btnClear').addEventListener('click', function () {
+    if (!loadLedger().length) return;
+    if (confirm('确定清空全部测算记录？建议先导出文件备份。')) {
+      saveLedger([]); renderLedger();
+    }
+  });
+
+  $('btnExport').addEventListener('click', function () {
+    var arr = loadLedger();
+    if (!arr.length) { alert('台账暂无数据，请先完成一次测算'); return; }
+    var head = ['时间', '客户名称', '模式', '质检人数', '图纸量', '单张人工耗时(小时)', '方案',
+                '月节约', '年节约', '三年节约', '投入(元)', '回收周期(月)'];
+    var rows = arr.map(function (x) {
+      var d = new Date(x.t);
+      var pad = function (v) { return (v < 10 ? '0' : '') + v; };
+      var u = x.unit === 'money' ? '元' : '小时';
+      function rng(k, kHi) {
+        var hi = x[kHi] !== undefined && x[kHi] !== null ? x[kHi] : x[k];
+        return Math.round(x[k]) + '~' + Math.round(hi) + u;
+      }
+      return [
+        d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()),
+        x.name || '', x.unit === 'money' ? '成本' : '工时', x.n || '',
+        x.q ? x.q + '张/' + (x.qUnit === 'month' ? '月' : '天') : '',
+        x.tLo ? x.tLo + '~' + (x.tHi || x.tLo) : '',
+        x.plan || '',
+        rng('month', 'monthHi'), rng('year', 'yearHi'), rng('y3', 'y3Hi'),
+        x.cost0 || '', pbText(x).replace(' 个月', '')
+      ];
+    });
+    var csv = '\uFEFF' + [head].concat(rows).map(function (r) {
+      return r.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(',');
+    }).join('\r\n');
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '简会AI识图效益测算台账_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  /* ---------- 工资类型切换 ---------- */
+  function syncWageUI() {
+    var isHour = $('wageType').value === 'hour';
+    $('wageUnit').textContent = isHour ? '元/小时' : '元/月';
+    $('wageHint').textContent = isHour
+      ? '市场参考：月薪 7,000 元约折合时薪 40 元（月薪 ÷ 21.75 ÷ 8）'
+      : '已预填市场参考月薪 7,000 元，可修改；按 21.75 天 × 8 小时折算为时薪参与测算';
+  }
+  $('wageType').addEventListener('change', function () {
+    $('nWage').value = this.value === 'month' ? 7000 : 40;
+    syncWageUI();
+  });
+
+  $('btnCalc').addEventListener('click', function () { calc(true); });
+  document.querySelector('.input-card').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type === 'number') { calc(true); }
+  });
+
+  /* ---------- 一键导出整页测算报告（PDF，单页长图版式） ---------- */
+  function loadScript(src) {
+    return new Promise(function (res, rej) {
+      var s = document.createElement('script');
+      s.src = src;
+      s.onload = res;
+      s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+  var exporting = false;
+  $('btnPdf').addEventListener('click', function () {
+    if (exporting) return;
+    exporting = true;
+    var btn = this, old = btn.textContent;
+    var done = function () { exporting = false; btn.textContent = old; btn.disabled = false; };
+    btn.textContent = '正在准备组件…'; btn.disabled = true;
+    Promise.all([
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+    ]).then(function () {
+      btn.textContent = '正在生成报告，请稍候…';
+      btn.style.visibility = 'hidden'; // 导出按钮不出现在报告内
+      return html2canvas(document.body, { scale: 2, useCORS: true, backgroundColor: '#F5F7FA' });
+    }).then(function (canvas) {
+      btn.style.visibility = '';
+      var w = 210, h = 210 * canvas.height / canvas.width; // A4 宽度，高度随页面内容等比
+      var pdf = new window.jspdf.jsPDF({ unit: 'mm', format: [w, h], orientation: 'portrait' });
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.88), 'JPEG', 0, 0, w, h);
+      pdf.save('简会AI识图效益测算报告_' + new Date().toISOString().slice(0, 10) + '.pdf');
+      done();
+    }).catch(function () {
+      btn.style.visibility = '';
+      alert('PDF 组件在线加载失败（网络原因）。\n可改用浏览器自带功能：按 Ctrl + P，目标打印机选择"另存为 PDF"，即可导出整页报告。');
+      done();
+    });
+  });
+
+  /* ---------- 初始化 ---------- */
+  syncWageUI();
+  applyMode();
+  renderLedger();
+  calc(false);
+})();
+</script>
+</body>
+</html>
