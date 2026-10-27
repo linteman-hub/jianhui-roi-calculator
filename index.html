@@ -236,6 +236,66 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
   .calc-grid { grid-template-columns: 1fr; }
   .card { box-shadow: none; break-inside: avoid; }
 }
+
+/* ===== 导出报告（A4 单页，794×1123px = 210×297mm） ===== */
+#reportSheet {
+  position: fixed; left: -20000px; top: 0;
+  width: 794px; height: 1123px; background: #fff;
+  font-size: 13px; line-height: 1.55; color: var(--text);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.rp-head {
+  background: linear-gradient(135deg, #16324F 0%, #1D4ED8 100%);
+  border-bottom: 5px solid var(--amber);
+  color: #fff; padding: 26px 40px 22px;
+}
+.rp-head .rp-brand { font-size: 26px; font-weight: 800; letter-spacing: 2px; }
+.rp-head .rp-sub { font-size: 13px; opacity: .85; margin-top: 6px; display: flex; justify-content: space-between; gap: 12px; }
+.rp-body { padding: 26px 44px 0; flex: 1; display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+.rp-sec-title {
+  font-size: 16px; font-weight: 700; color: var(--navy);
+  border-left: 4px solid var(--blue); padding-left: 11px; margin: 0;
+}
+.rp-kpis { display: flex; gap: 16px; }
+.rp-kpi {
+  flex: 1; min-width: 0; background: #F8FAFD; border: 1px solid var(--border); border-radius: 12px;
+  padding: 24px 14px; text-align: center;
+}
+.rp-kpi.main { background: linear-gradient(160deg,#FFFFFF 55%, #EEF3FE 100%); border-color: #C7D8F5; }
+.rp-kpi.boss-main { background: linear-gradient(160deg,#FFFFFF 55%, #FDF6F5 100%); border-color: #F0C9C4; }
+.rp-kpi .rp-klabel { font-size: 13.5px; color: var(--muted); }
+.rp-kpi .rp-kval { font-size: 31px; font-weight: 800; color: var(--navy); margin-top: 10px; white-space: nowrap; font-variant-numeric: tabular-nums; letter-spacing: -.5px; }
+.rp-kpi .rp-kval.sm { font-size: 23px; margin-top: 15px; }
+.rp-kpi.boss-main .rp-kval { color: var(--red); }
+.rp-note {
+  font-size: 13.5px; color: #0B6B4A; background: var(--teal-soft);
+  border-radius: 8px; padding: 13px 16px; line-height: 1.75;
+}
+.rp-payback {
+  background: #FFF8E6; border: 1px solid #F5E3B8; border-radius: 10px;
+  padding: 13px 16px; font-size: 14px; color: #7A5A14; font-weight: 600; line-height: 1.75;
+}
+.rp-payback b { color: #5C430E; }
+.rp-facts {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px 30px;
+  background: #F8FAFD; border: 1px solid var(--border); border-radius: 12px; padding: 16px 22px; font-size: 13.5px;
+}
+.rp-fact { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 7px 0; border-bottom: 1px dashed #E4E9F0; }
+.rp-fact .fk { color: var(--muted); flex: none; }
+.rp-fact .fv { font-weight: 700; color: var(--navy); text-align: right; }
+.rp-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 14px; min-height: 0; }
+.rp-vcard { border: 1px solid var(--border); border-top: 4px solid var(--blue); border-radius: 10px; padding: 16px 20px; display: flex; flex-direction: column; }
+.rp-vcard.c2 { border-top-color: var(--purple); }
+.rp-vcard.c3 { border-top-color: var(--teal); }
+.rp-vcard.c4 { border-top-color: var(--orange); }
+.rp-vcard .rv-tag { display: inline-block; align-self: flex-start; font-size: 11.5px; font-weight: 700; padding: 2px 11px; border-radius: 999px; background: var(--blue-soft); color: var(--blue-deep); }
+.rp-vcard.c2 .rv-tag { background: var(--purple-soft); color: var(--purple); }
+.rp-vcard.c3 .rv-tag { background: var(--teal-soft); color: var(--teal); }
+.rp-vcard.c4 .rv-tag { background: #FEEFDF; color: var(--orange); }
+.rp-vcard .rv-t { font-size: 15.5px; font-weight: 700; color: var(--navy); margin: 8px 0 6px; }
+.rp-vcard .rv-d { font-size: 13px; color: #5B6472; line-height: 1.8; }
+.rp-foot { padding: 14px 44px 20px; font-size: 11.5px; color: var(--muted); border-top: 1px solid var(--border); margin-top: auto; }
+.rp-foot .rf-co { font-weight: 700; color: var(--navy); font-size: 12.5px; }
 </style>
 </head>
 <body>
@@ -436,6 +496,9 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
 
 <footer>本测算结果为参考估算（按录入的耗时区间测算），正式报价及相关费用口径以厦门简会信息科技有限公司报价文件为准。</footer>
 
+<!-- 导出报告容器（A4 单页，屏幕外渲染，导出时截图） -->
+<div id="reportSheet"></div>
+
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
@@ -451,6 +514,8 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
     ytj: { label: 'AI识图一体机', cost0: 49800, cost3: 49800 },
     dy:  { label: '年订阅版',     cost0: 52600, cost3: 157800 }
   };
+
+  var lastResult = null; // 最近一次成功测算的结果（供报告导出使用）
 
   function fmtMoney(n) { return '¥ ' + Math.round(n).toLocaleString('zh-CN'); }
   function fmtHour(n) { return Math.round(n).toLocaleString('zh-CN') + ' 小时'; }
@@ -688,6 +753,12 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
 
     renderCompare(r, rate);
     $('formulaBox').innerHTML = formulaText(rate, isBoss && r.plan ? PLAN[r.plan].label : '');
+    lastResult = {
+      r: r, vLo: vLo, vHi: vHi, isBoss: isBoss, rate: rate,
+      plan: r.plan,
+      perDay: hs.perDay,
+      savedDayLo: hs.lo.savedDayH, savedDayHi: hs.hi.savedDayH
+    };
     if (save) { addRecord(r, vLo, vHi); }
   }
 
@@ -902,7 +973,7 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
     if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type === 'number') { calc(true); }
   });
 
-  /* ---------- 一键导出整页测算报告（PDF，单页长图版式） ---------- */
+  /* ---------- 一键导出测算报告（A4 单页 PDF） ---------- */
   function loadScript(src) {
     return new Promise(function (res, rej) {
       var s = document.createElement('script');
@@ -912,32 +983,123 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
       document.head.appendChild(s);
     });
   }
+  function fmtDateCN() {
+    var d = new Date();
+    return d.getFullYear() + ' 年 ' + (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日';
+  }
+  /* KPI 区间：两端统一量纲、单位只出现一次，防止横向溢出 */
+  function fmtKpi(lo, hi, isMoney) {
+    var useWan = Math.max(Math.abs(lo), Math.abs(hi)) >= 10000;
+    function v(n) {
+      n = Math.round(n);
+      return useWan ? (n / 10000).toFixed(1) : n.toLocaleString('zh-CN');
+    }
+    return (isMoney ? '¥ ' : '') + v(lo) + ' ~ ' + v(hi) + (isMoney ? (useWan ? ' 万' : '') : (useWan ? ' 万小时' : ' 小时'));
+  }
+  function valueCardsHTML() {
+    return [
+      ['交付保障', '交付周期得到有效保障', '检验环节耗时约为原来的十分之一，紧急订单不再因检验积压延误交付。'],
+      ['市场竞争力', '质量管理能力成为经营优势', '检验数字化、智能化水平是客户审厂、供应商认定与投标的重要评价依据，助力获取更多合作机会。'],
+      ['质量追溯', '质量数据电子化，批次全程可追溯', '图纸信息、关键尺寸与判定结果电子化存档，质量问题按批次快速溯源，由事后处置转向事前预防。'],
+      ['质量管理岗位', '检验工作强度显著降低', '漏检、错检率同步下降，新员工无需长期培训即可上岗，质量报表自动生成，月末统计大幅减负。']
+    ].map(function (c, i) {
+      return '<div class="rp-vcard' + (i ? ' c' + (i + 1) : '') + '">'
+        + '<span class="rv-tag">' + c[0] + '</span>'
+        + '<div class="rv-t">' + c[1] + '</div>'
+        + '<div class="rv-d">' + c[2] + '</div></div>';
+    }).join('');
+  }
+  function buildReport() {
+    var R = lastResult;
+    if (!R) { alert('请先完成一次测算，再导出报告'); return null; }
+    var isMoney = R.isBoss;
+    var p = R.isBoss ? PLAN[R.plan] : null;
+    var planLabel = R.isBoss && R.plan ? p.label : '';
+    var pbFast = R.isBoss && R.vHi.month > 0 ? p.cost0 / R.vHi.month : null;
+    var pbSlow = R.isBoss && R.vLo.month > 0 ? p.cost0 / R.vLo.month : null;
+    var netLo = R.isBoss ? R.vLo.y3 - p.cost3 : 0;
+    var netHi = R.isBoss ? R.vHi.y3 - p.cost3 : 0;
+    var k = 1 - R.rate;
+
+    var facts = [
+      ['图纸处理量', R.r.q + ' 张/' + (R.r.qUnit === 'month' ? '月' : '天')],
+      ['单张人工检验耗时', R.r.tLo + ' ~ ' + R.r.tHi + ' 小时/张'],
+      ['应用后单张耗时', (R.r.tLo * k).toFixed(2) + ' ~ ' + (R.r.tHi * k).toFixed(2) + ' 小时/张'],
+      ['质检人数', R.r.n + ' 人'],
+      ['AI 提效口径', '节约 ' + Math.round(R.rate * 100) + '%（约人工的 1/' + Math.round(1 / k) + '）'],
+      ['测算日期', fmtDateCN()]
+    ];
+    if (R.isBoss) {
+      facts.splice(4, 0, ['质检员工资', R.r.wage + (R.r.wt === 'hour' ? ' 元/小时' : ' 元/月')]);
+      facts.splice(5, 0, ['意向方案', planLabel + ' · 投入 ' + fmtMoney(p.cost0)]);
+    }
+
+    function kpiHtml(label, lo, hi) {
+      var isMain = label.indexOf('每月') === 0;
+      var txt = fmtKpi(lo, hi, isMoney);
+      return '<div class="rp-kpi' + (isMain ? ' main' + (R.isBoss ? ' boss-main' : '') : '') + '">'
+        + '<div class="rp-klabel">' + label + '</div>'
+        + '<div class="rp-kval' + (txt.length > 12 ? ' sm' : '') + '">' + txt + '</div></div>';
+    }
+    var html = '<div class="rp-head">'
+      + '<div class="rp-brand">简会AI识图 · 应用效益测算报告</div>'
+      + '<div class="rp-sub"><span>图纸检验环节 AI 自动标注 + 人工核验 · 提效测算</span><span>' + fmtDateCN() + '</span></div>'
+      + '</div>'
+      + '<div class="rp-body">'
+      + '<div class="rp-kpis">'
+      + kpiHtml(R.isBoss ? '预计每月节约人工成本' : '预计每月节约工时', R.vLo.month, R.vHi.month)
+      + kpiHtml('每年节约', R.vLo.year, R.vHi.year)
+      + kpiHtml('三年累计节约', R.vLo.y3, R.vHi.y3)
+      + '</div>';
+    if (R.isBoss) {
+      html += '<div class="rp-payback">选定方案「' + p.label + '」（按提效 ' + Math.round(R.rate * 100) + '% 测算）· '
+        + (R.plan === 'dy' ? '首年投入 ' + fmtMoney(p.cost0) + '（此后每年 ' + fmtMoney(p.cost0) + '）' : '一次性投入 ' + fmtMoney(p.cost0))
+        + (pbFast !== null ? ' · 约 <b>' + pbFast.toFixed(1) + ' ~ ' + pbSlow.toFixed(1) + '</b> 个月收回投入' : '')
+        + ' · 三年净效益 <b>' + fmtMoney(netLo) + ' ~ ' + fmtMoney(netHi) + '</b></div>';
+    } else {
+      html += '<div class="rp-note">贵司 ' + R.r.n + ' 名质检人员经 AI 识图辅助后，每日节约 <b>'
+        + R.savedDayLo.toFixed(1) + ' ~ ' + R.savedDayHi.toFixed(1) + '</b> 小时，折合释放 <b>'
+        + (R.savedDayLo / 8).toFixed(1) + ' ~ ' + (R.savedDayHi / 8).toFixed(1)
+        + '</b> 名质检人员的人力投入，可转向工艺改进、质量分析等更高价值工作。</div>';
+    }
+    html += '<div class="rp-sec-title">测算依据</div>'
+      + '<div class="rp-facts">';
+    facts.forEach(function (f) {
+      html += '<div class="rp-fact"><span class="fk">' + f[0] + '</span><span class="fv">' + f[1] + '</span></div>';
+    });
+    html += '</div>'
+      + '<div class="rp-sec-title">除人工成本节约外的其他应用效益</div>'
+      + '<div class="rp-grid">' + valueCardsHTML() + '</div>'
+      + '</div>'
+      + '<div class="rp-foot"><span class="rf-co">厦门简会信息科技有限公司</span> · 本报告为参考估算（按录入的耗时区间测算），正式报价及费用口径以公司报价文件为准。</div>';
+    var sheet = $('reportSheet');
+    sheet.innerHTML = html;
+    return sheet;
+  }
+
   var exporting = false;
   $('btnPdf').addEventListener('click', function () {
     if (exporting) return;
+    var sheet = buildReport();
+    if (!sheet) return;
     exporting = true;
     var btn = this, old = btn.textContent;
     var done = function () { exporting = false; btn.textContent = old; btn.disabled = false; };
     btn.textContent = '正在准备组件…'; btn.disabled = true;
-    Promise.all([
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
-    ]).then(function () {
-      btn.textContent = '正在生成报告，请稍候…';
-      btn.style.visibility = 'hidden'; // 导出按钮不出现在报告内
-      return html2canvas(document.body, { scale: 2, useCORS: true, backgroundColor: '#F5F7FA' });
-    }).then(function (canvas) {
-      btn.style.visibility = '';
-      var w = 210, h = 210 * canvas.height / canvas.width; // A4 宽度，高度随页面内容等比
-      var pdf = new window.jspdf.jsPDF({ unit: 'mm', format: [w, h], orientation: 'portrait' });
-      pdf.addImage(canvas.toDataURL('image/jpeg', 0.88), 'JPEG', 0, 0, w, h);
-      pdf.save('简会AI识图效益测算报告_' + new Date().toISOString().slice(0, 10) + '.pdf');
-      done();
-    }).catch(function () {
-      btn.style.visibility = '';
-      alert('PDF 组件在线加载失败（网络原因）。\n可改用浏览器自带功能：按 Ctrl + P，目标打印机选择"另存为 PDF"，即可导出整页报告。');
-      done();
-    });
+    loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js')
+      .then(function () { return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'); })
+      .then(function () {
+        btn.textContent = '正在生成报告，请稍候…';
+        return html2canvas(sheet, { scale: 2, useCORS: true, backgroundColor: '#FFFFFF' });
+      }).then(function (canvas) {
+        var pdf = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 210, 297);
+        pdf.save('简会AI识图效益测算报告_' + new Date().toISOString().slice(0, 10) + '.pdf');
+        done();
+      }).catch(function () {
+        alert('PDF 组件在线加载失败（网络原因）。\n请检查网络后重试，或截图本页面核心结果区域发予客户。');
+        done();
+      });
   });
 
   /* ---------- 初始化 ---------- */
