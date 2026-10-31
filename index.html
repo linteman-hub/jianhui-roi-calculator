@@ -116,6 +116,16 @@ h3 { font-size: 15px; font-weight: 700; color: var(--navy); }
 .plan-item .p-price { font-size: 12px; color: var(--muted); display: block; }
 .plan-item.sel .p-price { color: var(--blue-deep); font-weight: 700; }
 
+/* 方案投入金额录入 */
+.plan-price { margin-top: 10px; padding: 12px 14px; background: var(--bg); border-radius: 10px; }
+.plan-price .pp-label { font-size: 12.5px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.plan-price .pp-svc { margin-top: 8px; }
+.plan-price input {
+  width: 140px; flex: none; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
+  font-size: 14px; color: var(--text); background: #fff; outline: none; transition: border-color .15s;
+}
+.plan-price input:focus { border-color: var(--blue); }
+
 #btnCalc {
   width: 100%; margin-top: 4px; padding: 13px; border: none; border-radius: 10px;
   background: linear-gradient(135deg, #1D4ED8, #2563EB);
@@ -363,11 +373,23 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
           <label>客户意向方案（选定后方可测算投入回收）</label>
           <div class="plans" id="planGroup">
             <label class="plan-item"><input type="radio" name="plan" value="dj">
-              <span><span class="p-name">单机版</span><span class="p-price">¥8,000 / 套 · 永久授权 · 提效约 80%</span></span></label>
+              <span><span class="p-name">单机版</span><span class="p-price">永久授权 · 提效约 80%</span></span></label>
             <label class="plan-item"><input type="radio" name="plan" value="ytj">
-              <span><span class="p-name">AI 识图一体机</span><span class="p-price">¥49,800 · 含硬件 · 永久授权 · 提效 10 倍（约 90%）</span></span></label>
+              <span><span class="p-name">AI 识图一体机</span><span class="p-price">含硬件 · 永久授权 · 提效 10 倍（约 90%）</span></span></label>
             <label class="plan-item"><input type="radio" name="plan" value="dy">
-              <span><span class="p-name">年订阅版</span><span class="p-price">¥36,800/年 + 年服务费 ¥15,800 · 提效 10 倍（约 90%）</span></span></label>
+              <span><span class="p-name">年订阅版</span><span class="p-price">按年付费 · 提效 10 倍（约 90%）</span></span></label>
+          </div>
+          <div id="planPrice" class="plan-price hidden">
+            <div class="pp-label">方案投入金额（按公司实际报价录入）</div>
+            <div class="inline-row">
+              <input type="number" id="nPriceMain" min="0" value="8000">
+              <span class="unit" id="priceMainUnit">元 / 套</span>
+            </div>
+            <div class="inline-row pp-svc hidden" id="priceServiceRow">
+              <input type="number" id="nPriceService" min="0" value="15800">
+              <span class="unit">元 / 年 · 年服务费</span>
+            </div>
+            <div class="hint" id="priceHint"></div>
           </div>
         </div>
       </div>
@@ -510,10 +532,43 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
   function saveRate(plan) { return plan === 'dj' ? 0.8 : 0.9; }
 
   var PLAN = {
-    dj:  { label: '单机版',       cost0: 8000,  cost3: 8000 },
-    ytj: { label: 'AI识图一体机', cost0: 49800, cost3: 49800 },
-    dy:  { label: '年订阅版',     cost0: 52600, cost3: 157800 }
+    dj:  { label: '单机版' },
+    ytj: { label: 'AI识图一体机' },
+    dy:  { label: '年订阅版' }
   };
+  // 方案默认参考价（可手动修改）：dy 年订阅 = 订阅费 + 年服务费，按年付费
+  var PRICE_DEFAULT = {
+    dj:  { main: 8000,  unit: '元 / 套' },
+    ytj: { main: 49800, unit: '元（含硬件）' },
+    dy:  { main: 36800, unit: '元 / 年 · 订阅费', svc: 15800 }
+  };
+  /* 读取当前方案投入：dy 总投入 = 订阅费 + 服务费，三年累计 = 总投入 × 3；其余一次性投入 */
+  function getPlan(plan) {
+    var main = parseFloat($('nPriceMain').value) || 0;
+    var svc = parseFloat($('nPriceService').value) || 0;
+    var cost0 = plan === 'dy' ? main + svc : main;
+    return {
+      label: PLAN[plan].label,
+      cost0: cost0,
+      cost3: plan === 'dy' ? cost0 * 3 : cost0,
+      main: main, svc: plan === 'dy' ? svc : 0
+    };
+  }
+  function syncPriceUI(plan) {
+    if (!plan) { $('planPrice').className = 'plan-price hidden'; return; }
+    var d = PRICE_DEFAULT[plan];
+    $('planPrice').className = 'plan-price';
+    $('nPriceMain').value = d.main;
+    $('priceMainUnit').textContent = d.unit;
+    if (plan === 'dy') {
+      $('nPriceService').value = d.svc;
+      $('priceServiceRow').className = 'inline-row pp-svc';
+      $('priceHint').textContent = '首年总投入 = 订阅费 + 服务费；按年付费，三年累计投入 = 首年总投入 × 3';
+    } else {
+      $('priceServiceRow').className = 'inline-row pp-svc hidden';
+      $('priceHint').textContent = plan === 'dj' ? '一次性投入，永久授权' : '一次性投入，含硬件，永久授权';
+    }
+  }
 
   var lastResult = null; // 最近一次成功测算的结果（供报告导出使用）
 
@@ -685,7 +740,7 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
 
   function showErr(msg) {
     var el = $('errTip');
-    if (!msg) { el.className = 'err-tip'; return; }
+    if (!msg) { el.className = 'err-tip'; el.textContent = ''; return; }
     el.textContent = msg;
     el.className = 'err-tip show';
   }
@@ -702,6 +757,12 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
 
     var isBoss = mode === 'boss';
     var rate = isBoss && r.plan ? saveRate(r.plan) : QC_RATE;
+    var p = null;
+    if (isBoss) {
+      p = getPlan(r.plan);
+      var priceEmpty = !$('nPriceMain').value || (r.plan === 'dy' && !$('nPriceService').value);
+      if (priceEmpty || p.cost0 <= 0) { showErr('请录入方案投入金额（需大于 0，按公司实际报价填写）'); return; }
+    }
     var hs = computeHours(r, rate);
     var fmt = isBoss ? fmtMoney : fmtHour;
     var vLo, vHi;
@@ -722,7 +783,6 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
     var extra = $('mExtra'), pbRow = $('paybackRow');
     if (isBoss) {
       extra.className = 'm-extra hidden';
-      var p = PLAN[r.plan];
       var pbFast = vHi.month > 0 ? p.cost0 / vHi.month : null;
       var pbSlow = vLo.month > 0 ? p.cost0 / vLo.month : null;
       var netLo = vLo.y3 - p.cost3, netHi = vHi.y3 - p.cost3;
@@ -745,21 +805,17 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
     }
 
     renderBars(vLo, vHi, fmt);
-    if (isBoss) {
-      renderCum(vLo.month, vHi.month, PLAN[r.plan].cost0);
-    } else {
-      renderCum(vLo.month, vHi.month, 0);
-    }
+    renderCum(vLo.month, vHi.month, isBoss ? p.cost0 : 0);
 
     renderCompare(r, rate);
     $('formulaBox').innerHTML = formulaText(rate, isBoss && r.plan ? PLAN[r.plan].label : '');
     lastResult = {
       r: r, vLo: vLo, vHi: vHi, isBoss: isBoss, rate: rate,
-      plan: r.plan,
+      plan: r.plan, planInfo: p,
       perDay: hs.perDay,
       savedDayLo: hs.lo.savedDayH, savedDayHi: hs.hi.savedDayH
     };
-    if (save) { addRecord(r, vLo, vHi); }
+    if (save) { addRecord(r, vLo, vHi, p); }
   }
 
   /* ---------- 台账 ---------- */
@@ -768,21 +824,23 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
   }
   function saveLedger(arr) { localStorage.setItem(LKEY, JSON.stringify(arr)); }
 
-  function addRecord(r, vLo, vHi) {
+  function addRecord(r, vLo, vHi, p) {
     var arr = loadLedger();
     var isBoss = mode === 'boss';
     arr.unshift({
       t: Date.now(), mode: mode, name: '',
       n: r.n, q: r.q, qUnit: r.qUnit, tLo: r.tLo, tHi: r.tHi,
       wt: r.wt, wage: r.wage,
-      plan: isBoss && r.plan ? PLAN[r.plan].label : '',
+      plan: isBoss && p ? p.label : '',
       unit: isBoss ? 'money' : 'hour',
       month: vLo.month, monthHi: vHi.month,
       year: vLo.year, yearHi: vHi.year,
       y3: vLo.y3, y3Hi: vHi.y3,
-      cost0: isBoss ? PLAN[r.plan].cost0 : 0,
-      paybackLo: isBoss && vHi.month > 0 ? +(PLAN[r.plan].cost0 / vHi.month).toFixed(1) : null,
-      paybackHi: isBoss && vLo.month > 0 ? +(PLAN[r.plan].cost0 / vLo.month).toFixed(1) : null
+      cost0: isBoss ? p.cost0 : 0,
+      priceMain: isBoss ? p.main : null,
+      priceService: isBoss ? p.svc : null,
+      paybackLo: isBoss && vHi.month > 0 ? +(p.cost0 / vHi.month).toFixed(1) : null,
+      paybackHi: isBoss && vLo.month > 0 ? +(p.cost0 / vLo.month).toFixed(1) : null
     });
     saveLedger(arr.slice(0, 200));
     renderLedger();
@@ -896,6 +954,9 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
           pi.className = 'plan-item' + (pi.querySelector('input').checked ? ' sel' : '');
         });
         if (x.wt) { $('wageType').value = x.wt; $('nWage').value = x.wage; syncWageUI(); }
+        syncPriceUI(match || 'ytj');
+        if (x.priceMain != null) $('nPriceMain').value = x.priceMain;
+        if (x.priceService != null && match === 'dy') $('nPriceService').value = x.priceService;
       }
       calc(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -909,6 +970,7 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
         pi.className = 'plan-item' + (pi.querySelector('input').checked ? ' sel' : '');
       });
       if (mode === 'boss') {
+        syncPriceUI(this.value);
         $('formulaBox').innerHTML = formulaText(saveRate(this.value), PLAN[this.value].label);
       }
     });
@@ -1013,7 +1075,7 @@ footer { text-align: center; font-size: 12px; color: var(--muted); padding: 0 20
     var R = lastResult;
     if (!R) { alert('请先完成一次测算，再导出报告'); return null; }
     var isMoney = R.isBoss;
-    var p = R.isBoss ? PLAN[R.plan] : null;
+    var p = R.isBoss ? R.planInfo : null;
     var planLabel = R.isBoss && R.plan ? p.label : '';
     var pbFast = R.isBoss && R.vHi.month > 0 ? p.cost0 / R.vHi.month : null;
     var pbSlow = R.isBoss && R.vLo.month > 0 ? p.cost0 / R.vLo.month : null;
