@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>简会 AI 3D介绍</title>
+<meta name="description" content="厦门简会信息科技有限公司 · 简会 AI 图纸识别系统 3D 数字孪生总览">
+<link rel="icon" type="image/png" href="assets/logo.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============ 黑底 LOGO 入场页（约 3.4s 后自动淡出，点击任意处跳过） ============ -->
+<div id="intro" aria-hidden="false">
+  <div class="intro-stack">
+    <img class="intro-logo" src="assets/logo.png" alt="简会信息 JIANHUI INFORMATION">
+    <span class="intro-tag">AI DRAWING INTELLIGENCE</span>
+  </div>
+  <span class="intro-skip">点击任意处跳过</span>
+</div>
+
+<!-- ============ 封面（独立一页：左文案 + 右侧 3D 自动旋转） ============ -->
+<div id="splash" role="button" tabindex="0" aria-label="进入数字孪生全景">
+  <div class="cover-left">
+    <header class="cover-brand">
+      <img src="assets/logo.png" alt="简会信息 JIANHUI INFORMATION">
+      <span>JIANHUI AI<em>数字孪生 · 3D TOUR</em></span>
+    </header>
+    <h1 class="cover-title"><span>简会 AI</span><b>图纸智能识别</b></h1>
+    <p class="cover-sub">一张图纸 2 小时 → 10 分钟 · 3D 交互导览</p>
+    <div class="cover-actions">
+      <button class="cover-enter" id="coverEnter" type="button">
+        <i>→</i>进入全景导览
+      </button>
+      <span class="cover-note">拖动旋转 · 滚轮缩放 · 点击场景进入</span>
+    </div>
+    <ul class="cover-facts">
+      <li><b>95%+</b><em>识别准确率</em></li>
+      <li><b>10 倍</b><em>标注效率</em></li>
+      <li><b>50+</b><em>大型企业</em></li>
+    </ul>
+  </div>
+  <div class="cover-hint">封面场景自动旋转</div>
+</div>
+
+<!-- ============ 总览 ============ -->
+<div id="app" aria-hidden="true">
+
+  <main id="stage">
+    <canvas id="gl" aria-label="简会 AI 3D介绍三维场景"></canvas>
+
+    <!-- 场景①夜景：屏幕空间月亮（随夜色淡入，仅作风氛围，不做发光球） -->
+    <div id="nightMoon" aria-hidden="true"></div>
+
+    <div id="zoneLayer"></div>
+
+    <div id="stage-top">
+      <div class="stage-top-right">
+        <div class="chip chip-hint">拖动旋转 · 滚轮缩放 · 点击场景进入</div>
+      </div>
+    </div>
+
+    <!-- 演示态：左上品牌 + 返回 -->
+    <div id="demoTop" class="demo-top">
+      <div class="demo-brand">
+        <img src="assets/logo.png" alt="简会信息">
+        <span>简会 AI 3D介绍<em>3D INTRODUCTION</em></span>
+      </div>
+      <button id="exitScene" class="scene-exit" type="button" aria-label="返回全景">
+        <span>←</span> 返回全景
+      </button>
+    </div>
+
+    <nav id="sceneBar" class="scene-bar" aria-label="场景导航">
+      <button class="bar-item active" type="button" data-scene="1"><i>01</i><b>传统工厂</b></button>
+      <button class="bar-item" type="button" data-scene="2"><i>02</i><b>智能工厂</b></button>
+      <button class="bar-item" type="button" data-scene="3"><i>03</i><b>四类角色</b></button>
+      <button class="bar-item" type="button" data-scene="5"><i>04</i><b>客户矩阵</b></button>
+      <button class="bar-item" type="button" data-scene="4"><i>05</i><b>公司大楼</b></button>
+    </nav>
+
+    <!-- 场景详情卡片（内容由 JS 按场景填充） -->
+    <div id="scenePanel" class="scene-panel" hidden>
+      <div class="sp-eyebrow" id="spN"></div>
+      <div class="sp-title" id="spTitle"></div>
+      <div class="sp-sub" id="spSub"></div>
+      <div class="scene-card" id="spCard"></div>
+    </div>
+
+    <div id="stageFallback" class="stage-fallback" hidden>
+      <div>
+        <b>3D 场景未能启动</b>
+        <p>请使用支持 WebGL 的现代浏览器打开本页面。</p>
+      </div>
+    </div>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <!-- ============ 总览左上：紧凑品牌胶囊（对齐参考图，不再放大标题/CTA） ============ -->
+  <aside id="nav">
+    <header class="ov-eyebrow nav-anim" style="--d:.05s">
+      <img src="assets/logo.png" alt="简会信息">
+      <span>简会 AI 3D介绍<em>AI DRAWING INTELLIGENCE</em></span>
+    </header>
+  </aside>
+
+  <!-- ============ 公司介绍弹窗（PPT 第 2 页） ============ -->
+  <div id="aboutModal" class="about-modal" hidden>
+    <div class="about-mask" data-close></div>
+    <div class="about-dialog" role="dialog" aria-modal="true" aria-label="公司介绍">
+      <button class="about-close" type="button" aria-label="关闭">×</button>
+      <div class="about-grid">
+        <div class="about-left">
+          <img src="assets/logo.png" alt="简会信息">
+          <div class="about-co">厦门简会信息科技有限公司</div>
+          <h2>公司简介</h2>
+          <p class="about-kicker">厦门简会 · 专注 AI 图纸识别解决方案服务商</p>
+          <p class="about-para">厦门简会信息科技有限公司成立于2014年，作为一家国家高新技术企业，深度聚焦于工业AI与图纸智能解析领域。我们致力于解决传统制造业中图纸处理工作量大、人工录入易错等痛点。</p>
+          <p class="about-para">凭借自主研发的简会AI图纸识别引擎，公司已实现对复杂工程图、零件图及各类技术文档的自动化提取、校验与建模。我们秉持“诚信、专注、创新、卓越”的经营理念，以智慧平台为支撑，通过数智化赋能，助力传统制造业打破数据孤岛，实现从“纸质文档”到“智能数据”的生产力飞跃。</p>
+          <div class="about-mission">
+            <div class="ab-label">发展使命</div>
+            <p>通过前沿的技术和持续创新<br><b>提供综合解决方案</b></p>
+          </div>
+        </div>
+        <div class="about-right">
+          <figure class="about-photo">
+            <img src="assets/building.jpg" alt="福建省（厦门）人工智能产业园 F06 栋实拍">
+            <figcaption>
+              <span class="ab-cap">福建省（厦门）人工智能产业园 · F06 栋</span>
+              <span class="ab-cap-s">厦门市集美区软件园三期</span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 场景③：角色卡（点击人物弹出，文案取自《四类角色价值传播矩阵》） ============ -->
+  <div id="roleCard" class="role-card" hidden>
+    <button class="rc-close" type="button" aria-label="关闭角色卡">×</button>
+    <div class="rc-head">
+      <span class="rc-role" id="rcRole"></span>
+      <span class="rc-name" id="rcName"></span>
+      <span class="rc-age" id="rcAge"></span>
+    </div>
+    <p class="rc-ask" id="rcAsk"></p>
+    <div class="rc-body" id="rcBody"></div>
+  </div>
+
+  <!-- ============ 演示视频全屏层 ============ -->
+  <div id="videoOverlay" class="video-overlay" hidden>
+    <div class="vo-mask" data-close></div>
+    <div class="vo-box">
+      <button class="vo-close" type="button" aria-label="关闭视频">×</button>
+    </div>
+  </div>
+
+  <!-- ============ 外链二次确认 ============ -->
+  <div id="linkConfirm" class="link-confirm" hidden>
+    <div class="lc-mask" data-close></div>
+    <div class="lc-card" role="alertdialog" aria-modal="true">
+      <p>即将在新标签页打开<br><b>简会 AI图纸识别系统 · 在线演示</b><br><em>https://balloondemo.xmjianhui.com/</em></p>
+      <div class="lc-actions">
+        <button class="lc-cancel" type="button">取消</button>
+        <button class="lc-ok" type="button">打开演示</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 常驻视频宿主（供点击后全屏播放） -->
+  <div id="videoSink" aria-hidden="true"></div>
+</div>
+
+<script src="js/vendor/three.global.js"></script>
+<script src="js/vendor/OrbitControls.global.js"></script>
+<script src="js/vendor/kit.global.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
